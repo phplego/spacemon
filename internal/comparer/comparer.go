@@ -2,7 +2,7 @@ package comparer
 
 import (
 	"fmt"
-	"space-monitor2/internal/scanner"
+	"spacemon/internal/scanner"
 	"time"
 )
 

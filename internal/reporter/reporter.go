@@ -1,7 +1,7 @@
 package reporter
 
 import (
-	"space-monitor2/internal/scanner"
+	"spacemon/internal/scanner"
 )
 
 type Report interface {

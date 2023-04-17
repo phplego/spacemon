@@ -1,10 +1,10 @@
 package main
 
 import (
-	"space-monitor2/internal/config"
-	"space-monitor2/internal/reporter"
-	"space-monitor2/internal/scanner"
-	"space-monitor2/internal/storage"
+	"spacemon/internal/config"
+	"spacemon/internal/reporter"
+	"spacemon/internal/scanner"
+	"spacemon/internal/storage"
 )
 
 func main() {

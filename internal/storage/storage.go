@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"space-monitor2/internal/scanner"
+	"spacemon/internal/scanner"
 	"time"
 )
 import "github.com/gorepos/storage"

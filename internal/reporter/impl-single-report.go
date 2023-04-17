@@ -1,6 +1,6 @@
 package reporter
 
-import "space-monitor2/internal/scanner"
+import "spacemon/internal/scanner"
 
 type SingleScanReport struct{}
 

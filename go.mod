@@ -1,4 +1,4 @@
-module space-monitor2
+module spacemon
 
 go 1.19
 

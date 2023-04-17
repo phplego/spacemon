@@ -2,8 +2,8 @@ package reporter
 
 import (
 	"fmt"
-	"space-monitor2/internal/comparer"
-	"space-monitor2/internal/scanner"
+	"spacemon/internal/comparer"
+	"spacemon/internal/scanner"
 )
 
 type ComparisonReport struct {
