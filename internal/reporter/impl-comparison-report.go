@@ -39,13 +39,13 @@ func (r *ComparisonReport) Save() {
 
 // PrintTable prints summarized table
 func PrintTable(comparisonResult comparer.ComparisonResult) {
-	title := "test"
+	title := ""
 	if title == "" {
 		title, _ = os.Hostname()
 		title = strings.ToUpper(title)
 	}
 	tableWriter := table.NewWriter()
-	tableWriter.SetTitle("%s - %d directories", color.New(color.Bold, color.FgHiYellow).Sprintf(title), len(comparisonResult.DirectoryResults))
+	tableWriter.SetTitle("%s - %d directories", C("title", title), len(comparisonResult.DirectoryResults))
 	tableWriter.SetStyle(table.StyleRounded)
 	tableWriter.SetOutputMirror(os.Stdout)
 	tableWriter.AppendHeader(table.Row{"path", "size", "dirs", "files", "scan duration"})
@@ -53,10 +53,10 @@ func PrintTable(comparisonResult comparer.ComparisonResult) {
 	for i, dirResult := range comparisonResult.ScanResult.DirectoryResults {
 		dirCompResult := comparisonResult.DirectoryResults[i]
 		tableWriter.AppendRow([]interface{}{
-			color.HiBlueString(scanner.ShorifyPath(dirResult.DirectoryPath)),
-			HumanSize(dirResult.TotalSize) + " " + color.HiMagentaString(HumanSizeSign(dirCompResult.SizeDiff)),
-			fmt.Sprintf("%d (%+d)", dirResult.FolderCount, dirCompResult.FolderCountDiff),
-			fmt.Sprintf("%d (%+d)", dirResult.FileCount, dirCompResult.FileCountDiff),
+			C("dirs", scanner.ShorifyPath(dirResult.DirectoryPath)),
+			HumanSize(dirResult.TotalSize) + " " + C("diff", HumanSizeSign(dirCompResult.SizeDiff)),
+			fmt.Sprintf("%d %s", dirResult.FolderCount, C("diff", "%+d", dirCompResult.FolderCountDiff)),
+			fmt.Sprintf("%d %s", dirResult.FileCount, C("diff", "%+d", dirCompResult.FileCountDiff)),
 			dirResult.ScanDuration,
 		})
 	}
@@ -70,7 +70,7 @@ func PrintTable(comparisonResult comparer.ComparisonResult) {
 	tableWriter.AppendRow(table.Row{
 		C("headerHi", "curr stime (t₁)"),
 		comparisonResult.CurrentScanTime.Format("02 Jan 15:04"),
-		TimeAgo(comparisonResult.CurrentScanTime),
+		//TimeAgo(comparisonResult.CurrentScanTime),
 	})
 	tableWriter.AppendSeparator()
 
@@ -78,7 +78,7 @@ func PrintTable(comparisonResult comparer.ComparisonResult) {
 
 	tableWriter.AppendRow(table.Row{
 		"FREE SPACE",
-		color.HiGreenString(HumanSize(comparisonResult.ScanResult.FreeSpace)) + " " + color.HiMagentaString(deltaFreeSpace),
+		C("free", HumanSize(comparisonResult.ScanResult.FreeSpace)) + " " + color.HiMagentaString(deltaFreeSpace),
 		"", "",
 		time.Since(comparisonResult.ScanResult.StartTime).Round(time.Millisecond),
 	})

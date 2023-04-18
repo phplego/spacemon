@@ -55,6 +55,7 @@ func ScanDirectory(directory string) DirectoryResult {
 	var directoryResult = DirectoryResult{
 		DirectoryPath: directory,
 	}
+	startTime := time.Now()
 	_ = filepath.Walk(directory, func(path string, fileInfo os.FileInfo, err error) error {
 		if err != nil {
 			//log.Println(err)
@@ -70,6 +71,7 @@ func ScanDirectory(directory string) DirectoryResult {
 		}
 		return nil
 	})
+	directoryResult.ScanDuration = time.Now().Sub(startTime).Round(time.Millisecond)
 	return directoryResult
 }
 
