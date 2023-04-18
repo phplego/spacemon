@@ -7,6 +7,7 @@ import (
 )
 
 type ComparisonResult struct {
+	ScanResult       *scanner.ScanResult
 	DirectoryResults []DirectoryComparisonResult
 	FreeSpaceDiff    int64
 	PrevScanTime     time.Time
@@ -15,8 +16,8 @@ type ComparisonResult struct {
 
 type DirectoryComparisonResult struct {
 	DirectoryPath   string
-	FileCountDiff   int
-	FolderCountDiff int
+	FileCountDiff   int64
+	FolderCountDiff int64
 	SizeDiff        int64
 }
 
@@ -55,9 +56,10 @@ func CompareResults(prevResult, result *scanner.ScanResult) ComparisonResult {
 
 	// Return the ComparisonResult
 	return ComparisonResult{
+		ScanResult:       result,
 		DirectoryResults: directoryCompareResults,
 		FreeSpaceDiff:    freeSpaceDiff,
-		PrevScanTime:     prevResult.ScanTime,
-		CurrentScanTime:  result.ScanTime,
+		PrevScanTime:     prevResult.StartTime,
+		CurrentScanTime:  result.StartTime,
 	}
 }

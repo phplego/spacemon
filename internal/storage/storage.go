@@ -23,7 +23,7 @@ func LoadPreviousResults() (*scanner.ScanResult, error) {
 }
 
 func buildKey(result scanner.ScanResult) string {
-	return "scans/" + result.ScanTime.Format(time.RFC3339Nano)
+	return "scans/" + result.StartTime.Format(time.RFC3339Nano)
 }
 
 func SaveResult(result scanner.ScanResult) {

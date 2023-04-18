@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"github.com/shirou/gopsutil/disk"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -17,13 +18,14 @@ type ScanResult struct {
 	DirectoryResults []DirectoryResult
 	Errors           []ScanError
 	FreeSpace        int64
-	ScanTime         time.Time
+	StartTime        time.Time
+	IsCompleted      bool
 }
 
 type DirectoryResult struct {
 	DirectoryPath string
-	FileCount     int
-	FolderCount   int
+	FileCount     int64
+	FolderCount   int64
 	TotalSize     int64
 	ScanDuration  time.Duration
 }
@@ -31,7 +33,9 @@ type DirectoryResult struct {
 func ScanDirectories(directories []string, resultsChan chan<- ScanResult) {
 	result := ScanResult{}
 	result.DirectoryResults = make([]DirectoryResult, 0)
-	result.ScanTime = time.Now()
+	result.StartTime = time.Now()
+	result.FreeSpace, _ = GetFreeSpace()
+
 	resultsChan <- result
 
 	for _, directory := range directories {
@@ -39,6 +43,9 @@ func ScanDirectories(directories []string, resultsChan chan<- ScanResult) {
 		result.DirectoryResults = append(result.DirectoryResults, directoryResult)
 		resultsChan <- result
 	}
+
+	result.IsCompleted = true
+	resultsChan <- result
 
 	close(resultsChan)
 }
@@ -63,7 +70,6 @@ func ScanDirectory(directory string) DirectoryResult {
 		}
 		return nil
 	})
-
 	return directoryResult
 }
 
@@ -76,4 +82,23 @@ func AbsPath(path string) string {
 		return filepath.Join(usr.HomeDir, path[2:])
 	}
 	return path
+}
+
+func ShorifyPath(absPath string) string {
+	usr, err := user.Current()
+	if err != nil {
+		return absPath
+	}
+	if strings.HasPrefix(absPath, usr.HomeDir) {
+		return strings.Replace(absPath, usr.HomeDir, "~", 1)
+	}
+	return absPath
+}
+
+func GetFreeSpace() (int64, error) {
+	di, err := disk.Usage(".")
+	if err != nil {
+		return 0, err
+	}
+	return int64(di.Free), nil
 }
