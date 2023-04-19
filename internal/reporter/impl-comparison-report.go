@@ -47,15 +47,14 @@ func RenderTable(comparisonResult comparer.ComparisonResult) string {
 	tableWriter.SetStyle(table.StyleRounded)
 	tableWriter.AppendHeader(table.Row{"path", "size", "dirs", "files", "scan duration"})
 
-	for i, dir := range comparisonResult.ScanResult.ScanSetup.Directories {
-		if i < len(comparisonResult.ScanResult.DirectoryResults) {
-			dirResult := comparisonResult.ScanResult.DirectoryResults[i]
-			dirCompResult := comparisonResult.DirectoryResults[i]
+	for _, dir := range comparisonResult.ScanResult.ScanSetup.Directories {
+		if diff, ok := comparisonResult.DirectoryDiffs[dir]; ok {
+			dirResult := comparisonResult.ScanResult.DirectoryResults[dir]
 			tableWriter.AppendRow([]interface{}{
 				C("dirs", scanner.ShorifyPath(dir)),
-				HumanSize(dirResult.TotalSize) + " " + C("diff", HumanSizeSign(dirCompResult.SizeDiff)),
-				fmt.Sprintf("%d %s", dirResult.FolderCount, C("diff", "%+d", dirCompResult.FolderCountDiff)),
-				fmt.Sprintf("%d %s", dirResult.FileCount, C("diff", "%+d", dirCompResult.FileCountDiff)),
+				HumanSize(dirResult.TotalSize) + " " + C("diff", HumanSizeSign(diff.SizeDiff)),
+				fmt.Sprintf("%d %s", dirResult.FolderCount, C("diff", "%+d", diff.FolderCountDiff)),
+				fmt.Sprintf("%d %s", dirResult.FileCount, C("diff", "%+d", diff.FileCountDiff)),
 				dirResult.ScanDuration,
 			})
 		} else { // not scanned yet
@@ -91,16 +90,4 @@ func RenderTable(comparisonResult comparer.ComparisonResult) string {
 		time.Since(comparisonResult.ScanResult.StartTime).Round(time.Millisecond),
 	})
 	return tableWriter.Render()
-}
-
-func ColorHeader(str string, a ...interface{}) string {
-	return color.New(color.FgBlue).Add(color.Bold).Sprintf(str, a...)
-}
-
-func ColorHeaderHi(str string, a ...interface{}) string {
-	return color.New(color.FgHiBlue).Add(color.Bold).Sprintf(str, a...)
-}
-
-func ColorPale(str string, a ...interface{}) string {
-	return color.New(color.FgHiYellow). /*.Add(color.Bold)*/ Sprintf(str, a...)
 }

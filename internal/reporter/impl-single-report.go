@@ -30,9 +30,8 @@ func RenderSingleScanTable(result scanner.ScanResult) string {
 	tableWriter.SetStyle(table.StyleRounded)
 	tableWriter.AppendHeader(table.Row{"path", "size", "dirs", "files", "scan duration"})
 
-	for i, dir := range result.ScanSetup.Directories {
-		if i < len(result.DirectoryResults) {
-			dirResult := result.DirectoryResults[i]
+	for _, dir := range result.ScanSetup.Directories {
+		if dirResult, ok := result.DirectoryResults[dir]; ok {
 			tableWriter.AppendRow([]interface{}{
 				C("dirs", scanner.ShorifyPath(dir)),
 				HumanSize(dirResult.TotalSize),

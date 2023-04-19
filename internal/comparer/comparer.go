@@ -7,14 +7,14 @@ import (
 )
 
 type ComparisonResult struct {
-	ScanResult       *scanner.ScanResult
-	DirectoryResults []DirectoryComparisonResult
-	FreeSpaceDiff    int64
-	PrevScanTime     time.Time
-	CurrentScanTime  time.Time
+	ScanResult      *scanner.ScanResult
+	DirectoryDiffs  map[string]DirectoryDiff
+	FreeSpaceDiff   int64
+	PrevScanTime    time.Time
+	CurrentScanTime time.Time
 }
 
-type DirectoryComparisonResult struct {
+type DirectoryDiff struct {
 	DirectoryPath   string
 	FileCountDiff   int64
 	FolderCountDiff int64
@@ -22,25 +22,20 @@ type DirectoryComparisonResult struct {
 }
 
 func CompareResults(prevResult, result *scanner.ScanResult) ComparisonResult {
-	// Create a map for fast lookup of previous scanning results
-	prevResultMap := make(map[string]scanner.DirectoryResult)
-	for _, r := range prevResult.DirectoryResults {
-		prevResultMap[r.DirectoryPath] = r
-	}
 
-	// Create a slice to store comparison results
-	directoryCompareResults := make([]DirectoryComparisonResult, 0, len(result.DirectoryResults))
+	// Create a map to store comparison results
+	directoryCompareResults := make(map[string]DirectoryDiff, 0)
 
 	// Iterate through the current scanning results
-	for _, dirResult := range result.DirectoryResults {
-		prevDirResult, ok := prevResultMap[dirResult.DirectoryPath]
+	for dir, dirResult := range result.DirectoryResults {
+		prevDirResult, ok := prevResult.DirectoryResults[dir]
 		if !ok {
 			fmt.Printf("Warning: No previous result found for directory: '%s'\n", dirResult.DirectoryPath)
 			continue
 		}
 
 		// Calculate the difference between the current and previous result
-		dirCompareResult := DirectoryComparisonResult{
+		dirCompareResult := DirectoryDiff{
 			DirectoryPath:   dirResult.DirectoryPath,
 			FileCountDiff:   dirResult.FileCount - prevDirResult.FileCount,
 			FolderCountDiff: dirResult.FolderCount - prevDirResult.FolderCount,
@@ -48,7 +43,7 @@ func CompareResults(prevResult, result *scanner.ScanResult) ComparisonResult {
 		}
 
 		// Add the comparison result to the slice
-		directoryCompareResults = append(directoryCompareResults, dirCompareResult)
+		directoryCompareResults[dir] = dirCompareResult
 	}
 
 	// Calculate the difference in free disk space
@@ -56,10 +51,10 @@ func CompareResults(prevResult, result *scanner.ScanResult) ComparisonResult {
 
 	// Return the ComparisonResult
 	return ComparisonResult{
-		ScanResult:       result,
-		DirectoryResults: directoryCompareResults,
-		FreeSpaceDiff:    freeSpaceDiff,
-		PrevScanTime:     prevResult.StartTime,
-		CurrentScanTime:  result.StartTime,
+		ScanResult:      result,
+		DirectoryDiffs:  directoryCompareResults,
+		FreeSpaceDiff:   freeSpaceDiff,
+		PrevScanTime:    prevResult.StartTime,
+		CurrentScanTime: result.StartTime,
 	}
 }
