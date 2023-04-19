@@ -1,10 +1,18 @@
 package storage
 
 import (
+	"spacemon/internal/config"
 	"spacemon/internal/scanner"
 	"time"
 )
 import "github.com/gorepos/storage"
+
+func init() {
+	// set storage dir
+	storage.SetOptions(storage.Options{
+		Dir: config.GetAppDir() + "/storage",
+	})
+}
 
 func LoadPreviousResults() (*scanner.ScanResult, error) {
 	keys := storage.Keys("scans/")

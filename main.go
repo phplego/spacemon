@@ -10,7 +10,10 @@ import (
 func main() {
 	cfg := config.LoadConfig()
 	scanResultsChan := make(chan scanner.ScanResult)
-	go scanner.ScanDirectories(cfg.Directories, scanResultsChan)
+	go scanner.ScanDirectories(scanner.ScanSetup{
+		Directories: cfg.Directories,
+		Title:       cfg.Title,
+	}, scanResultsChan)
 
 	prevResult, err := storage.LoadPreviousResults()
 	if err != nil {

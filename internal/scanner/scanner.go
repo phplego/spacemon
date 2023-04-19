@@ -15,6 +15,7 @@ type ScanError struct {
 }
 
 type ScanResult struct {
+	ScanSetup        ScanSetup
 	DirectoryResults []DirectoryResult
 	Errors           []ScanError
 	FreeSpace        int64
@@ -30,15 +31,21 @@ type DirectoryResult struct {
 	ScanDuration  time.Duration
 }
 
-func ScanDirectories(directories []string, resultsChan chan<- ScanResult) {
+type ScanSetup struct {
+	Directories []string
+	Title       string
+}
+
+func ScanDirectories(setup ScanSetup, resultsChan chan<- ScanResult) {
 	result := ScanResult{}
+	result.ScanSetup = setup
 	result.DirectoryResults = make([]DirectoryResult, 0)
 	result.StartTime = time.Now()
 	result.FreeSpace, _ = GetFreeSpace()
 
 	resultsChan <- result
 
-	for _, directory := range directories {
+	for _, directory := range setup.Directories {
 		directoryResult := ScanDirectory(directory)
 		result.DirectoryResults = append(result.DirectoryResults, directoryResult)
 		resultsChan <- result
