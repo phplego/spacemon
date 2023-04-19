@@ -16,7 +16,7 @@ type ScanError struct {
 
 type ScanResult struct {
 	ScanSetup        ScanSetup
-	DirectoryResults map[string]DirectoryResult
+	DirectoryResults *SafeMap[string, DirectoryResult]
 	Errors           []ScanError
 	FreeSpace        int64
 	StartTime        time.Time
@@ -29,6 +29,7 @@ type DirectoryResult struct {
 	FolderCount   int64
 	TotalSize     int64
 	ScanDuration  time.Duration
+	Completed     bool
 }
 
 type ScanSetup struct {
@@ -39,15 +40,20 @@ type ScanSetup struct {
 func ScanDirectories(setup ScanSetup, resultsChan chan<- ScanResult) {
 	result := ScanResult{}
 	result.ScanSetup = setup
-	result.DirectoryResults = make(map[string]DirectoryResult, 0)
+	result.DirectoryResults = NewSafeMap[string, DirectoryResult]()
 	result.StartTime = time.Now()
 	result.FreeSpace, _ = GetFreeSpace()
 
 	resultsChan <- result
 
 	for _, directory := range setup.Directories {
-		result.DirectoryResults[directory] = ScanDirectory(directory)
-		resultsChan <- result
+		ch := make(chan DirectoryResult)
+		go ScanDirectory(directory, ch)
+		for res := range ch {
+			result.DirectoryResults.Set(directory, res)
+			resultsChan <- result
+		}
+
 	}
 
 	result.IsCompleted = true
@@ -56,12 +62,13 @@ func ScanDirectories(setup ScanSetup, resultsChan chan<- ScanResult) {
 	close(resultsChan)
 }
 
-func ScanDirectory(directory string) DirectoryResult {
+func ScanDirectory(directory string, dirResultChan chan<- DirectoryResult) DirectoryResult {
 	directory = AbsPath(directory)
 	var directoryResult = DirectoryResult{
 		DirectoryPath: directory,
 	}
 	startTime := time.Now()
+	tmpTime := time.Now()
 	_ = filepath.Walk(directory, func(path string, fileInfo os.FileInfo, err error) error {
 		if err != nil {
 			//log.Println(err)
@@ -74,10 +81,19 @@ func ScanDirectory(directory string) DirectoryResult {
 				directoryResult.FileCount++
 				directoryResult.TotalSize += fileInfo.Size()
 			}
+			directoryResult.ScanDuration = time.Now().Sub(startTime).Round(time.Millisecond)
+
+			if time.Now().After(tmpTime.Add(50 * time.Millisecond)) {
+				tmpTime = time.Now()
+				dirResultChan <- directoryResult
+			}
+
 		}
 		return nil
 	})
-	directoryResult.ScanDuration = time.Now().Sub(startTime).Round(time.Millisecond)
+	directoryResult.Completed = true
+	dirResultChan <- directoryResult
+	close(dirResultChan)
 	return directoryResult
 }
 

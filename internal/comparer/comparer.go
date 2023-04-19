@@ -27,8 +27,8 @@ func CompareResults(prevResult, result *scanner.ScanResult) ComparisonResult {
 	directoryCompareResults := make(map[string]DirectoryDiff, 0)
 
 	// Iterate through the current scanning results
-	for dir, dirResult := range result.DirectoryResults {
-		prevDirResult, ok := prevResult.DirectoryResults[dir]
+	for dir, dirResult := range result.DirectoryResults.Items() {
+		prevDirResult, ok := prevResult.DirectoryResults.Get(dir)
 		if !ok {
 			fmt.Printf("Warning: No previous result found for directory: '%s'\n", dirResult.DirectoryPath)
 			continue
