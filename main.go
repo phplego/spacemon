@@ -1,11 +1,19 @@
 package main
 
 import (
+	"flag"
+	"log"
 	"spacemon/internal/config"
 	"spacemon/internal/reporter"
 	"spacemon/internal/scanner"
 	"spacemon/internal/storage"
 )
+
+var argDryRun = flag.Bool("dry", false, "Dry run (don't save scan result)")
+
+func init() {
+	flag.Parse()
+}
 
 func main() {
 	cfg := config.LoadConfig()
@@ -34,6 +42,9 @@ func main() {
 		lastResult = result
 	}
 
-	storage.SaveResult(lastResult)
-	report.Save()
+	if !*argDryRun {
+		log.Println("save")
+		storage.SaveResult(lastResult)
+		report.Save()
+	}
 }
