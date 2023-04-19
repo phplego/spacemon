@@ -23,8 +23,6 @@ func NewComparisonReport(prevResult scanner.ScanResult) *ComparisonReport {
 	}
 }
 
-var lastPrint = ""
-
 func (r *ComparisonReport) Update(result scanner.ScanResult) {
 	comparisonResult := comparer.CompareResults(&r.prevResult, &result)
 
