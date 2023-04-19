@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"spacemon/internal/config"
 	"spacemon/internal/reporter"
 	"spacemon/internal/scanner"
@@ -43,7 +42,6 @@ func main() {
 	}
 
 	if !*argDryRun {
-		log.Println("save")
 		storage.SaveResult(lastResult)
 		report.Save()
 	}
