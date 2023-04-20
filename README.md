@@ -1,6 +1,6 @@
 # spacemon
 
-[![Build status](https://ci.appveyor.com/api/projects/status/0vfl7xxqunj6f24h?svg=true)](https://ci.appveyor.com/project/phplego/space-monitor)
+[![Build status](https://ci.appveyor.com/api/projects/status/7wmxgu2phw8iddgu?svg=true)](https://ci.appveyor.com/project/phplego/spacemon)
 
 
 Free space / Directory size monitoring utility (Linux, macOS & Windows)
