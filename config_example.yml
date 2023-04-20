@@ -1,0 +1,14 @@
+# Configuration file for the Space Monitor application
+
+# The title of the report, usually used to identify the host machine.
+# If empty, the hostname will be used as the title.
+title: my host machine
+
+# List of directories to be scanned by the Space Monitor.
+directories:
+  - /etc
+  - /var
+
+# Maximum number of historical scan results to be stored.
+# Older results will be removed from the storage.
+max-history-size: 20
