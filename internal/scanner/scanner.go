@@ -20,7 +20,7 @@ type ScanResult struct {
 	Errors           []ScanError
 	FreeSpace        int64
 	StartTime        time.Time
-	IsCompleted      bool
+	Completed        bool
 }
 
 type DirectoryResult struct {
@@ -38,10 +38,12 @@ type ScanSetup struct {
 }
 
 func ScanDirectories(setup ScanSetup, resultsChan chan<- ScanResult) {
-	result := ScanResult{}
-	result.ScanSetup = setup
-	result.DirectoryResults = NewSafeMap[string, DirectoryResult]()
-	result.StartTime = time.Now()
+	result := ScanResult{
+		ScanSetup:        setup,
+		DirectoryResults: NewSafeMap[string, DirectoryResult](),
+		StartTime:        time.Now(),
+		FreeSpace:        0, // Update FreeSpace later
+	}
 	result.FreeSpace, _ = GetFreeSpace()
 
 	resultsChan <- result
@@ -53,10 +55,9 @@ func ScanDirectories(setup ScanSetup, resultsChan chan<- ScanResult) {
 			result.DirectoryResults.Set(directory, res)
 			resultsChan <- result
 		}
-
 	}
 
-	result.IsCompleted = true
+	result.Completed = true
 	resultsChan <- result
 
 	close(resultsChan)

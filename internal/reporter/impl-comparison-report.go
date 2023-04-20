@@ -26,8 +26,8 @@ func NewComparisonReport(prevResult scanner.ScanResult) *ComparisonReport {
 func (r *ComparisonReport) Update(result scanner.ScanResult) {
 	comparisonResult := comparer.CompareResults(&r.prevResult, &result)
 
-	ClearScreen(true)
 	out := RenderTable(comparisonResult)
+	ClearScreen(true)
 	fmt.Println(out)
 }
 
