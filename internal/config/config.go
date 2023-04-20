@@ -13,7 +13,8 @@ type Config struct {
 
 	// Title is a string that displays at the top of the report, typically used to identify the host machine.
 	// If left empty, the hostname will be used as the title.
-	Title string `yaml:"title"`
+	Title          string `yaml:"title"`
+	MaxHistorySize int    `yaml:"max-history-size"`
 }
 
 func LoadConfig() Config {

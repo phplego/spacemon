@@ -44,5 +44,6 @@ func main() {
 	if !*argDryRun {
 		storage.SaveResult(lastResult)
 		report.Save()
+		storage.Cleanup(cfg.MaxHistorySize)
 	}
 }

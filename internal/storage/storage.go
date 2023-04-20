@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"sort"
 	"spacemon/internal/config"
 	"spacemon/internal/scanner"
 	"time"
@@ -36,7 +37,7 @@ func LoadPreviousResults() (*scanner.ScanResult, error) {
 
 // buildKey constructs a key for the given scan result using its start time.
 func buildKey(result scanner.ScanResult) string {
-	return "scans/" + result.StartTime.Format(time.RFC3339Nano)
+	return "scans/" + result.StartTime.Format(time.RFC3339)
 }
 
 // SaveResult saves the given scan result to the storage using the generated key.
@@ -45,5 +46,17 @@ func SaveResult(result scanner.ScanResult) {
 	err := storage.Put(buildKey(result), result)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func Cleanup(maxHistorySize int) {
+	keys := storage.Keys("scans/")
+	sort.Strings(keys)
+	if len(keys) <= maxHistorySize {
+		return
+	}
+
+	for _, key := range keys[0 : len(keys)-maxHistorySize] {
+		storage.Delete(key)
 	}
 }
