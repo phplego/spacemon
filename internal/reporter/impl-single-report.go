@@ -10,12 +10,14 @@ import (
 	"time"
 )
 
-type SingleScanReport struct{}
+type SingleScanReport struct {
+	BaseReport
+}
 
-func (s *SingleScanReport) Update(result scanner.ScanResult) {
+func (r *SingleScanReport) Update(result scanner.ScanResult) {
+	r.lastReportOutput = RenderSingleScanTable(result)
 	ClearScreen(true)
-	out := RenderSingleScanTable(result)
-	fmt.Println(out)
+	fmt.Println(r.lastReportOutput)
 }
 
 // RenderSingleScanTable prints summarized table
@@ -68,8 +70,4 @@ func RenderSingleScanTable(result scanner.ScanResult) string {
 		time.Since(result.StartTime).Round(time.Millisecond),
 	})
 	return tableWriter.Render()
-}
-
-func (s *SingleScanReport) Save() {
-	// save to file
 }

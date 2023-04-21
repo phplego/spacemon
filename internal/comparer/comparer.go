@@ -1,7 +1,6 @@
 package comparer
 
 import (
-	"fmt"
 	"spacemon/internal/scanner"
 	"time"
 )
@@ -30,7 +29,7 @@ func CompareResults(prevResult, result *scanner.ScanResult) ComparisonResult {
 	for dir, dirResult := range result.DirectoryResults.Items() {
 		prevDirResult, ok := prevResult.DirectoryResults.Get(dir)
 		if !ok {
-			fmt.Printf("Warning: No previous result found for directory: '%s'\n", dirResult.DirectoryPath)
+			// No previous result found for directory. Noting to compare
 			continue
 		}
 

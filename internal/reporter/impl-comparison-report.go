@@ -14,6 +14,7 @@ import (
 )
 
 type ComparisonReport struct {
+	BaseReport
 	prevResult scanner.ScanResult
 }
 
@@ -26,13 +27,9 @@ func NewComparisonReport(prevResult scanner.ScanResult) *ComparisonReport {
 func (r *ComparisonReport) Update(result scanner.ScanResult) {
 	comparisonResult := comparer.CompareResults(&r.prevResult, &result)
 
-	out := RenderTable(comparisonResult)
+	r.lastReportOutput = RenderTable(comparisonResult)
 	ClearScreen(true)
-	fmt.Println(out)
-}
-
-func (r *ComparisonReport) Save() {
-	// save to file
+	fmt.Println(r.lastReportOutput)
 }
 
 // RenderTable prints summarized table

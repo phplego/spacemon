@@ -27,7 +27,7 @@ func main() {
 		// Handle error
 	}
 
-	var report reporter.Report
+	var report reporter.ReportInterface
 
 	if prevResult == nil {
 		report = &reporter.SingleScanReport{}
