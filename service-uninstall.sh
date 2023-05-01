@@ -15,8 +15,5 @@ sudo rm ${SERVICE_FILE}
 # Reload the systemd daemon
 sudo systemctl daemon-reload
 
-# Remove the user created for the service
-sudo userdel ${SERVICE_NAME}
-
 # Print a message indicating that the uninstallation is complete
 echo "The ${SERVICE_NAME} service has been uninstalled."

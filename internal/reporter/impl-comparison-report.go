@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	"os"
 	"spacemon/internal/comparer"
 	"spacemon/internal/scanner"
@@ -112,5 +113,6 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 		"", "",
 		time.Since(comparisonResult.ScanResult.StartTime).Round(time.Millisecond),
 	})
+	text.EnableColors()
 	return tableWriter.Render()
 }

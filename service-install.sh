@@ -11,7 +11,7 @@ Description=${SERVICE_NAME} service
 After=network.target
 
 [Service]
-User=${SERVICE_NAME}
+User=$USER
 Group=${SERVICE_NAME}
 WorkingDirectory=$(pwd)
 ExecStart=${EXECUTABLE_PATH}
@@ -22,8 +22,6 @@ RestartSec=3
 WantedBy=multi-user.target
 EOL
 
-# Create a user for the service
-sudo useradd -r ${SERVICE_NAME}
 
 # Reload the systemd daemon
 sudo systemctl daemon-reload
@@ -35,4 +33,4 @@ sudo systemctl enable ${SERVICE_NAME}
 sudo systemctl start ${SERVICE_NAME}
 
 # Print a message indicating that the installation is complete
-echo "The ${SERVICE_NAME} service has been installed and started."/
+echo "The ${SERVICE_NAME} service has been installed and started."

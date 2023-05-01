@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/ilyakaznacheev/cleanenv"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -24,7 +23,6 @@ func LoadConfig() Config {
 		println("unable to load config.yml:", err.Error())
 		os.Exit(1)
 	}
-	log.Println(cfg)
 	return cfg
 }
 

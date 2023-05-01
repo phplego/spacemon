@@ -3,28 +3,51 @@ package main
 import (
 	"fmt"
 	"github.com/creack/pty"
+	"github.com/robert-nix/ansihtml"
 	"golang.org/x/net/websocket"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"spacemon/internal/config"
+	"spacemon/internal/reporter"
 	"spacemon/internal/scanner"
+	"spacemon/internal/storage"
 	"sync"
-	"time"
 )
 
 func wsHandler(ws *websocket.Conn) {
 	defer ws.Close()
-	var _ = scanner.ScanResult{}
-	for {
-		message := fmt.Sprintf("Current time: %s", time.Now().Format(time.RFC1123))
-		_, err := ws.Write([]byte(message))
+	cfg := config.LoadConfig()
+	scanResultsChan := make(chan scanner.ScanResult)
+	go scanner.ScanDirectories(scanner.ScanSetup{
+		Directories: cfg.Directories,
+		Title:       cfg.Title,
+	}, scanResultsChan)
+
+	prevResult, err := storage.LoadPreviousResults()
+	if err != nil {
+		// Handle error
+	}
+
+	var report reporter.ReportInterface
+
+	if prevResult == nil {
+		report = &reporter.SingleScanReport{}
+	} else {
+		report = reporter.NewComparisonReport(*prevResult)
+	}
+
+	for result := range scanResultsChan {
+		report.Update(result)
+		//html := report.Render()
+		html := ansihtml.ConvertToHTML([]byte(report.Render()))
+		_, err := ws.Write([]byte(html))
 		if err != nil {
 			log.Println("Socket Write error 484:", err)
 			break
 		}
-		time.Sleep(1 * time.Second)
 	}
 }
 
