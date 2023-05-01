@@ -22,3 +22,8 @@ func ClearScreen(gotoTop bool) {
 		fmt.Print("\u001B[H")
 	}
 }
+
+func ClearAndPrint(str string) {
+	ClearScreen(true)
+	fmt.Println(str)
+}

@@ -6,9 +6,11 @@ import (
 	"spacemon/internal/reporter"
 	"spacemon/internal/scanner"
 	"spacemon/internal/storage"
+	"spacemon/internal/util"
 )
 
 var argDryRun = flag.Bool("dry", false, "Dry run (don't save scan result)")
+var argJson = flag.Bool("json", false, "Print the report as JSON")
 
 func init() {
 	flag.Parse()
@@ -38,6 +40,12 @@ func main() {
 	var lastResult scanner.ScanResult
 	for result := range scanResultsChan {
 		report.Update(result)
+		if *argJson {
+			util.ClearAndPrint(report.RenderJson())
+		} else {
+			util.ClearAndPrint(report.Render())
+		}
+
 		lastResult = result
 	}
 

@@ -1,6 +1,7 @@
 package reporter
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -15,7 +16,8 @@ import (
 
 type ComparisonReport struct {
 	BaseReport
-	prevResult scanner.ScanResult
+	prevResult       scanner.ScanResult
+	comparisonResult comparer.ComparisonResult
 }
 
 func NewComparisonReport(prevResult scanner.ScanResult) *ComparisonReport {
@@ -25,15 +27,26 @@ func NewComparisonReport(prevResult scanner.ScanResult) *ComparisonReport {
 }
 
 func (r *ComparisonReport) Update(result scanner.ScanResult) {
-	comparisonResult := comparer.CompareResults(&r.prevResult, &result)
+	r.comparisonResult = comparer.CompareResults(&r.prevResult, &result)
 
-	r.lastReportOutput = RenderTable(comparisonResult)
-	ClearScreen(true)
-	fmt.Println(r.lastReportOutput)
 }
 
-// RenderTable prints summarized table
-func RenderTable(comparisonResult comparer.ComparisonResult) string {
+func (r *ComparisonReport) Render() string {
+	r.lastReportOutput = renderComparisonTable(r.comparisonResult)
+	return r.lastReportOutput
+}
+
+func (r *ComparisonReport) RenderJson() string {
+	bytes, err := json.Marshal(r.comparisonResult)
+	if err == nil {
+		return string(bytes)
+	} else {
+		return err.Error()
+	}
+}
+
+// renderComparisonTable prints summarized table
+func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 	title := comparisonResult.ScanResult.ScanSetup.Title
 	if title == "" {
 		title, _ = os.Hostname()

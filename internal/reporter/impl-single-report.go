@@ -1,6 +1,7 @@
 package reporter
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"os"
@@ -12,16 +13,29 @@ import (
 
 type SingleScanReport struct {
 	BaseReport
+	lastResult scanner.ScanResult
 }
 
 func (r *SingleScanReport) Update(result scanner.ScanResult) {
-	r.lastReportOutput = RenderSingleScanTable(result)
-	ClearScreen(true)
-	fmt.Println(r.lastReportOutput)
+	r.lastResult = result
 }
 
-// RenderSingleScanTable prints summarized table
-func RenderSingleScanTable(result scanner.ScanResult) string {
+func (r *SingleScanReport) Render() string {
+	r.lastReportOutput = renderSingleScanTable(r.lastResult)
+	return r.lastReportOutput
+}
+
+func (r *SingleScanReport) RenderJson() string {
+	bytes, err := json.Marshal(r.lastResult)
+	if err == nil {
+		return string(bytes)
+	} else {
+		return err.Error()
+	}
+}
+
+// renderSingleScanTable prints summarized table
+func renderSingleScanTable(result scanner.ScanResult) string {
 	title := result.ScanSetup.Title
 	if title == "" {
 		title, _ = os.Hostname()

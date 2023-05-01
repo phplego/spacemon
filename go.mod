@@ -3,12 +3,15 @@ module spacemon
 go 1.19
 
 require (
+	github.com/creack/pty v1.1.18
 	github.com/fatih/color v1.15.0
 	github.com/gorepos/storage v0.0.0-20230407213322-bb5af62f4309
 	github.com/ilyakaznacheev/cleanenv v1.4.2
 	github.com/jedib0t/go-pretty/v6 v6.4.6
+	github.com/robert-nix/ansihtml v1.0.1
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/xeonx/timeago v1.0.0-rc5
+	golang.org/x/net v0.8.0
 )
 
 require (

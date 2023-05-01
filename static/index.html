@@ -1,0 +1,14 @@
+<script>
+
+    const socket = new WebSocket("ws://localhost:8080/ws");
+
+    socket.onmessage = function(event) {
+        console.log("Message from server:", event.data);
+        document.write(event.data+"\n")
+    };
+
+    socket.onclose = function(event) {
+        console.log("WebSocket closed:", event);
+    };
+
+</script>

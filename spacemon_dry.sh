@@ -1,0 +1,2 @@
+./spacemon --dry
+
