@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/creack/pty"
+	"github.com/fatih/color"
 	"github.com/robert-nix/ansihtml"
 	"golang.org/x/net/websocket"
 	"io"
@@ -84,7 +85,12 @@ func RunWebserver() {
 
 }
 
+func init() {
+	color.NoColor = false
+}
+
 func main() {
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 

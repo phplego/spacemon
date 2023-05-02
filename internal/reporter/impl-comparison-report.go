@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/jedib0t/go-pretty/v6/text"
 	"os"
 	"spacemon/internal/comparer"
 	"spacemon/internal/scanner"
@@ -57,7 +56,6 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 	tableWriter.SetTitle("%s - %d directories", C("title", title), len(comparisonResult.ScanResult.ScanSetup.Directories))
 	tableWriter.SetStyle(table.StyleRounded)
 	tableWriter.AppendHeader(table.Row{"path", "size", "dirs", "files", "scan duration"})
-
 	for _, dir := range comparisonResult.ScanResult.ScanSetup.Directories {
 		dirResult, ok := comparisonResult.ScanResult.DirectoryResults.Get(dir)
 		if !ok {
@@ -113,6 +111,5 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 		"", "",
 		time.Since(comparisonResult.ScanResult.StartTime).Round(time.Millisecond),
 	})
-	text.EnableColors()
 	return tableWriter.Render()
 }
