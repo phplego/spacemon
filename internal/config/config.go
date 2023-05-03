@@ -14,6 +14,7 @@ type Config struct {
 	// If left empty, the hostname will be used as the title.
 	Title          string `yaml:"title"`
 	MaxHistorySize int    `yaml:"max-history-size"`
+	DaemonPort     int    `yaml:"daemon-port"`
 }
 
 func LoadConfig() Config {
