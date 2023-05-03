@@ -37,20 +37,18 @@ func main() {
 		report = reporter.NewComparisonReport(*prevResult)
 	}
 
-	var lastResult scanner.ScanResult
-	for result := range scanResultsChan {
+	var result scanner.ScanResult
+	for result = range scanResultsChan {
 		report.Update(result)
 		if *argJson {
 			util.ClearAndPrint(report.RenderJson())
 		} else {
 			util.ClearAndPrint(report.Render())
 		}
-
-		lastResult = result
 	}
 
 	if !*argDryRun {
-		storage.SaveResult(lastResult)
+		storage.SaveResult(result)
 		report.Save()
 		storage.Cleanup(cfg.MaxHistorySize)
 	}

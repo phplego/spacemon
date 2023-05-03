@@ -40,16 +40,21 @@ func wsHandler(ws *websocket.Conn) {
 		report = reporter.NewComparisonReport(*prevResult)
 	}
 
-	for result := range scanResultsChan {
+	var result scanner.ScanResult
+	for result = range scanResultsChan {
 		report.Update(result)
 		//html := report.Render()
 		html := ansihtml.ConvertToHTML([]byte(report.Render()))
 		_, err := ws.Write([]byte(html))
 		if err != nil {
 			log.Println("Socket Write error 484:", err)
-			break
 		}
 	}
+
+	// todo: if not dry run
+	storage.SaveResult(result)
+	report.Save()
+	storage.Cleanup(cfg.MaxHistorySize)
 }
 
 // example how to proxy spacemon console output
