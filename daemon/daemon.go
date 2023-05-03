@@ -76,9 +76,9 @@ func RunWebserver() {
 
 	// Root route handler
 	http.Handle("/", http.StripPrefix("/", fileServer))
-
-	log.Println("Starting server on http://localhost:8080 ...")
-	err := http.ListenAndServe(":8080", nil)
+	cfg := config.LoadConfig()
+	log.Printf("Starting server on http://localhost:%d ...\n", cfg.DaemonPort)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.DaemonPort), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}

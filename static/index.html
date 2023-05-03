@@ -2,21 +2,20 @@
 <head>
     <title>spacemon</title>
     <script>
-
-        const socket = new WebSocket("ws://localhost:8080/ws");
+        const socket = new WebSocket("ws://"+document.location.host+"/ws")
 
         socket.onmessage = function(event) {
-            console.log("Message from server:", event.data);
+            console.log("Message from server:", event.data)
             document.getElementById("report").innerHTML = event.data
-        };
+        }
 
         socket.onclose = function(event) {
-            console.log("WebSocket closed:", event);
-        };
+            console.log("WebSocket closed:", event)
+        }
 
     </script>
 </head>
-<body style="background-color: black; color: white">
+<body style="background-color: #333; color: white">
     <pre id="report"></pre>
 </body>
 </html>

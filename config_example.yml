@@ -12,3 +12,6 @@ directories:
 # Maximum number of historical scan results to be stored.
 # Older results will be removed from the storage.
 max-history-size: 20
+
+# Daemon HTTP port
+daemon-port: 18080
