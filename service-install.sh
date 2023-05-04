@@ -1,8 +1,7 @@
 #!/bin/bash
 
-SERVICE_NAME="spacemond"
-SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
-EXECUTABLE_PATH="$(pwd)/${SERVICE_NAME}"
+# Import service name and paths
+source ./service-config.sh
 
 # Create the systemd service file
 sudo bash -c "cat > ${SERVICE_FILE}" << EOL

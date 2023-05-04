@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SERVICE_NAME="spacemond"
-SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+# Import service name and paths
+source ./service-config.sh
 
 # Stop the service
 sudo systemctl stop ${SERVICE_NAME}
