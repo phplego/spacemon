@@ -11,7 +11,6 @@ After=network.target
 
 [Service]
 User=$USER
-Group=${SERVICE_NAME}
 WorkingDirectory=$(pwd)
 ExecStart=${EXECUTABLE_PATH}
 Restart=always
