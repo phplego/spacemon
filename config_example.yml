@@ -15,3 +15,6 @@ max-history-size: 20
 
 # Daemon HTTP port
 daemon-port: 18080
+
+daemon-basic-username: user
+daemon-basic-password: KJSHDfe43cIbf3d5fMrU

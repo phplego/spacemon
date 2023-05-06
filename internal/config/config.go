@@ -12,13 +12,21 @@ type Config struct {
 
 	// Title is a string that displays at the top of the report, typically used to identify the host machine.
 	// If left empty, the hostname will be used as the title.
-	Title          string `yaml:"title"`
-	MaxHistorySize int    `yaml:"max-history-size"`
-	DaemonPort     int    `yaml:"daemon-port"`
+	Title               string `yaml:"title"`
+	MaxHistorySize      int    `yaml:"max-history-size"`
+	DaemonPort          int    `yaml:"daemon-port"`
+	DaemonBasicUsername string `yaml:"daemon-basic-username"`
+	DaemonBasicPassword string `yaml:"daemon-basic-password"`
 }
 
 func LoadConfig() Config {
-	cfg := Config{}
+	// Default config values
+	cfg := Config{
+		MaxHistorySize:      20,
+		DaemonPort:          18080,
+		DaemonBasicUsername: "user",
+		DaemonBasicPassword: "KJSHDfe43cIbf3d5fMrU",
+	}
 	err := cleanenv.ReadConfig(GetAppDir()+"/config.yml", &cfg)
 	if err != nil {
 		println("unable to load config.yml:", err.Error())

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/creack/pty"
 	"github.com/fatih/color"
@@ -15,6 +16,7 @@ import (
 	"spacemon/internal/reporter"
 	"spacemon/internal/scanner"
 	"spacemon/internal/storage"
+	"strings"
 	"sync"
 )
 
@@ -78,6 +80,7 @@ func RunWebserver() {
 
 	// File server for HTML and JS files
 	fileServer := http.FileServer(http.Dir("static"))
+	fileServer = basicAuthMiddleware(fileServer)
 
 	// Root route handler
 	http.Handle("/", http.StripPrefix("/", fileServer))
@@ -92,6 +95,29 @@ func RunWebserver() {
 
 func init() {
 	color.NoColor = false
+}
+
+func basicAuthMiddleware(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+		if auth != "" {
+			authParts := strings.SplitN(auth, " ", 2)
+			if len(authParts) == 2 && authParts[0] == "Basic" {
+				userPass, err := base64.StdEncoding.DecodeString(authParts[1])
+				if err == nil {
+					parts := strings.SplitN(string(userPass), ":", 2)
+					cfg := config.LoadConfig()
+					if len(parts) == 2 && parts[0] == cfg.DaemonBasicUsername && parts[1] == cfg.DaemonBasicPassword {
+						handler.ServeHTTP(w, r)
+						return
+					}
+				}
+			}
+		}
+
+		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		http.Error(w, "Unauthorized.", http.StatusUnauthorized)
+	})
 }
 
 func main() {
