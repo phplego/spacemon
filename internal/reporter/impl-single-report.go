@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"os"
 	"spacemon/internal/scanner"
 	. "spacemon/internal/util"
 	"strings"
@@ -36,11 +35,7 @@ func (r *SingleScanReport) RenderJson() string {
 
 // renderSingleScanTable prints summarized table
 func renderSingleScanTable(result scanner.ScanResult) string {
-	title := result.ScanSetup.Title
-	if title == "" {
-		title, _ = os.Hostname()
-	}
-	title = strings.ToUpper(title)
+	title := strings.ToUpper(result.ScanSetup.Title)
 	tableWriter := table.NewWriter()
 	tableWriter.SetTitle("%s - %d directories", C("title", title), len(result.ScanSetup.Directories))
 	tableWriter.SetStyle(table.StyleRounded)

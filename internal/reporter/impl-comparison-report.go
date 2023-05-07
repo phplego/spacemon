@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"os"
 	"spacemon/internal/comparer"
 	"spacemon/internal/scanner"
 	. "spacemon/internal/util"
@@ -47,11 +46,7 @@ func (r *ComparisonReport) RenderJson() string {
 
 // renderComparisonTable prints summarized table
 func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
-	title := comparisonResult.ScanResult.ScanSetup.Title
-	if title == "" {
-		title, _ = os.Hostname()
-	}
-	title = strings.ToUpper(title)
+	title := strings.ToUpper(comparisonResult.ScanResult.ScanSetup.Title)
 	tableWriter := table.NewWriter()
 	tableWriter.SetTitle("%s - %d directories", C("title", title), len(comparisonResult.ScanResult.ScanSetup.Directories))
 	tableWriter.SetStyle(table.StyleRounded)

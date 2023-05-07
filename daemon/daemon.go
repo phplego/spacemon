@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/creack/pty"
 	"github.com/fatih/color"
@@ -45,7 +46,11 @@ func wsHandler(ws *websocket.Conn) {
 		report.Update(result)
 		//html := report.Render()
 		html := ansihtml.ConvertToHTML([]byte(report.Render()))
-		_, err := ws.Write([]byte(html))
+		bytes, err := json.Marshal(map[string]string{
+			"output": string(html),
+			"title":  cfg.Title,
+		})
+		_, err = ws.Write(bytes)
 		if err != nil {
 			log.Println("Socket Write error 484:", err)
 		}

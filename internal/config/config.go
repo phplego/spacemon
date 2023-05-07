@@ -32,6 +32,12 @@ func LoadConfig() Config {
 		println("unable to load config.yml:", err.Error())
 		os.Exit(1)
 	}
+
+	// If title is empty, use hostname.
+	if cfg.Title == "" {
+		cfg.Title, _ = os.Hostname()
+	}
+
 	return cfg
 }
 

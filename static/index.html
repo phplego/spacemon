@@ -5,8 +5,9 @@
         const socket = new WebSocket("ws://"+document.location.host+"/ws")
 
         socket.onmessage = function(event) {
-            console.log("Message from server:", event.data)
-            document.getElementById("report").innerHTML = event.data
+            const data = JSON.parse(event.data)
+            document.getElementById("report").innerHTML = data.output
+            document.title = data.title
         }
 
         socket.onclose = function(event) {
