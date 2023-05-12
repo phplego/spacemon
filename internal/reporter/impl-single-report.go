@@ -50,7 +50,7 @@ func renderSingleScanTable(result scanner.ScanResult) string {
 				"…",
 				"…",
 				"…",
-				0,
+				"…",
 			})
 			continue
 		}
@@ -60,7 +60,7 @@ func renderSingleScanTable(result scanner.ScanResult) string {
 			HumanSize(dirResult.TotalSize),
 			fmt.Sprintf("%d", dirResult.FolderCount),
 			fmt.Sprintf("%d", dirResult.FileCount),
-			dirResult.ScanDuration,
+			dirResult.ScanDuration.String(),
 		})
 	}
 

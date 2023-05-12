@@ -2,21 +2,34 @@
 <head>
     <title>spacemon</title>
     <script>
-        const socket = new WebSocket("ws://"+document.location.host+"/ws?dry=1")
-
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data)
-            document.getElementById("report").innerHTML = data.output
-            document.title = data.title
+        function start(dry = false) {
+            let url = "ws://"+document.location.host+"/ws" + (dry ? '?dry=1' : '')
+            const socket = new WebSocket(url)
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data)
+                document.getElementById("report").innerHTML = data.output
+                document.title = data.title
+            }
+            socket.onclose = function(event) {
+                console.log("WebSocket closed:", event)
+            }
         }
 
-        socket.onclose = function(event) {
-            console.log("WebSocket closed:", event)
-        }
-
+        start(true)
     </script>
+    <style>
+        .bold{font-weight: bold;}
+        .fg-bright-magenta{color: violet;}
+        .fg-bright-blue{color: deepskyblue;}
+        .fg-bright-green{color: lime;}
+        .fg-bright-yellow{color: yellow;}
+        .fg-blue{color: #00759b;}
+        .fg-yellow{color: yellow;}
+    </style>
 </head>
 <body style="background-color: #333; color: white">
+    <button onclick="start()">start and save</button>
+    <button onclick="start(true)">start (dry run)</button>
     <pre id="report"></pre>
 </body>
 </html>
