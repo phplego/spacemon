@@ -61,7 +61,7 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 				"…",
 				"…",
 				"…",
-				0,
+				"…",
 			})
 			continue
 		}
@@ -72,7 +72,7 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 				HumanSize(dirResult.TotalSize) + " " + C("diff", HumanSizeSign(diff.SizeDiff)),
 				fmt.Sprintf("%d %s", dirResult.FolderCount, C("diff", "%+d", diff.FolderCountDiff)),
 				fmt.Sprintf("%d %s", dirResult.FileCount, C("diff", "%+d", diff.FileCountDiff)),
-				dirResult.ScanDuration,
+				dirResult.ScanDuration.String(),
 			})
 		} else {
 			// in progress
@@ -81,7 +81,7 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 				HumanSize(dirResult.TotalSize),
 				fmt.Sprintf("%d", dirResult.FolderCount),
 				fmt.Sprintf("%d", dirResult.FileCount),
-				dirResult.ScanDuration,
+				dirResult.ScanDuration.String(),
 			})
 		}
 	}

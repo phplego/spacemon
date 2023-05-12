@@ -47,7 +47,7 @@ func cmdScan(ch chan string, dryRun bool) {
 	var result scanner.ScanResult
 	for result = range scanResultsChan {
 		report.Update(result)
-		html := ansihtml.ConvertToHTML([]byte(report.Render()))
+		html := ansihtml.ConvertToHTMLWithClasses([]byte(report.Render()), "", true)
 		bytes, _ := json.Marshal(map[string]string{
 			"output": string(html),
 			"title":  cfg.Title,
