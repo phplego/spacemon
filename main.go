@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"spacemon/internal/config"
 	"spacemon/internal/reporter"
@@ -19,7 +20,9 @@ func init() {
 func main() {
 	cfg := config.LoadConfig()
 	scanResultsChan := make(chan scanner.ScanResult)
-	go scanner.ScanDirectories(scanner.ScanSetup{
+	//ctx, _ := context.WithTimeout(context.TODO(), time.Millisecond*300)
+	ctx := context.TODO()
+	go scanner.ScanDirectories(ctx, scanner.ScanSetup{
 		Directories: cfg.Directories,
 		Title:       cfg.Title,
 	}, scanResultsChan)
@@ -52,4 +55,5 @@ func main() {
 		report.Save()
 		storage.Cleanup(cfg.MaxHistorySize)
 	}
+
 }

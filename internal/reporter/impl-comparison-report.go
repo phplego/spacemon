@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	"spacemon/internal/comparer"
 	"spacemon/internal/scanner"
 	. "spacemon/internal/util"
@@ -53,7 +54,7 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 	tableWriter.AppendHeader(table.Row{"path", "size", "dirs", "files", "scan duration"})
 	for _, dir := range comparisonResult.ScanResult.ScanSetup.Directories {
 		dirResult, ok := comparisonResult.ScanResult.DirectoryResults.Get(dir)
-		if !ok {
+		if !ok || dirResult.Canceled {
 			// not started yet
 			tableWriter.AppendRow([]interface{}{
 				C("dirs", scanner.ShorifyPath(dir)),
@@ -106,5 +107,11 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 		"", "",
 		time.Since(comparisonResult.ScanResult.StartTime).Round(time.Millisecond),
 	})
+	if comparisonResult.ScanResult.Error != "" {
+		tableWriter.AppendSeparator()
+		e := C("error", comparisonResult.ScanResult.Error)
+		tableWriter.AppendRow(table.Row{e, "", "", "", ""}, table.RowConfig{AutoMerge: true, AutoMergeAlign: text.AlignLeft})
+
+	}
 	return tableWriter.Render()
 }

@@ -1,29 +1,32 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/creack/pty"
 	"github.com/fatih/color"
 	"github.com/robert-nix/ansihtml"
 	"golang.org/x/net/websocket"
-	"io"
 	"log"
 	"net/http"
-	"os"
-	"os/exec"
 	"spacemon/internal/config"
 	"spacemon/internal/reporter"
 	"spacemon/internal/scanner"
 	"spacemon/internal/storage"
-	"sync"
 )
 
-func wsHandler(ws *websocket.Conn) {
-	defer ws.Close()
+var scanContext, scanContextCancel = context.WithCancel(context.Background())
+
+func init() {
+	color.NoColor = false
+}
+
+func cmdScan(ch chan string, dryRun bool) {
 	cfg := config.LoadConfig()
+	scanContextCancel()
+	scanContext, scanContextCancel = context.WithCancel(context.Background())
 	scanResultsChan := make(chan scanner.ScanResult)
-	go scanner.ScanDirectories(scanner.ScanSetup{
+	go scanner.ScanDirectories(scanContext, scanner.ScanSetup{
 		Directories: cfg.Directories,
 		Title:       cfg.Title,
 	}, scanResultsChan)
@@ -44,36 +47,34 @@ func wsHandler(ws *websocket.Conn) {
 	var result scanner.ScanResult
 	for result = range scanResultsChan {
 		report.Update(result)
-		//html := report.Render()
 		html := ansihtml.ConvertToHTML([]byte(report.Render()))
-		bytes, err := json.Marshal(map[string]string{
+		bytes, _ := json.Marshal(map[string]string{
 			"output": string(html),
 			"title":  cfg.Title,
 		})
-		_, err = ws.Write(bytes)
-		if err != nil {
-			log.Println("Socket Write error 484:", err)
-		}
+		ch <- string(bytes)
 	}
 
-	// todo: if not dry run
-	storage.SaveResult(result)
-	report.Save()
-	storage.Cleanup(cfg.MaxHistorySize)
+	if !dryRun {
+		storage.SaveResult(result)
+		report.Save()
+		storage.Cleanup(cfg.MaxHistorySize)
+	}
+	close(ch)
 }
 
-// example how to proxy spacemon console output
-func exec1() {
-	cmd := exec.Command("./spacemon")
-	ptmx, err := pty.Start(cmd)
-	if err != nil {
-		panic(err)
-	}
-	defer func() { _ = ptmx.Close() }()
-	_, _ = io.Copy(os.Stdout, ptmx)
-	if err := cmd.Wait(); err != nil {
-		fmt.Fprintf(os.Stderr, "Command exited with error: %v\n", err)
-		os.Exit(1)
+func wsHandler(ws *websocket.Conn) {
+	defer ws.Close()
+	var dry = ws.Request().URL.Query().Get("dry")
+	println("dry=", dry)
+	var ch = make(chan string)
+	go cmdScan(ch, dry != "")
+	for msg := range ch {
+		_, err := ws.Write([]byte(msg))
+		if err != nil {
+			log.Println("Socket Write error 484:", err)
+			return
+		}
 	}
 }
 
@@ -83,7 +84,7 @@ func RunWebserver() {
 
 	// File server for HTML and JS files
 	fileServer := http.FileServer(http.Dir("static"))
-	fileServer = basicAuthMiddleware(fileServer)
+	fileServer = basicAuthMiddleware(fileServer, config.LoadConfig().DaemonBasicUsername, config.LoadConfig().DaemonBasicPassword)
 
 	// Root route handler
 	http.Handle("/", http.StripPrefix("/", fileServer))
@@ -93,40 +94,8 @@ func RunWebserver() {
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
-
-}
-
-func init() {
-	color.NoColor = false
-}
-
-func basicAuthMiddleware(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cfg := config.LoadConfig()
-
-		sendUnauthorized := func() {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		}
-
-		user, pass, ok := r.BasicAuth()
-		if !ok || user != cfg.DaemonBasicUsername || pass != cfg.DaemonBasicPassword {
-			sendUnauthorized()
-			return
-		}
-		handler.ServeHTTP(w, r)
-	})
 }
 
 func main() {
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		defer wg.Done()
-		RunWebserver()
-	}()
-
-	wg.Wait() // Блокирует, пока веб-сервер работает
+	RunWebserver()
 }

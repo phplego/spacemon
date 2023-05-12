@@ -10,6 +10,7 @@ var gColorStyles = map[string]*color.Color{
 	"pale":     color.New(color.FgHiYellow),
 	"header":   color.New(color.FgBlue, color.Bold),
 	"headerHi": color.New(color.FgHiBlue, color.Bold),
+	"error":    color.New(color.FgHiRed),
 }
 
 func C(style, fmt string, a ...interface{}) string {

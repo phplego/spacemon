@@ -2,7 +2,7 @@
 <head>
     <title>spacemon</title>
     <script>
-        const socket = new WebSocket("ws://"+document.location.host+"/ws")
+        const socket = new WebSocket("ws://"+document.location.host+"/ws?dry=1")
 
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data)

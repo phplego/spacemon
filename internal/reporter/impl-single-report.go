@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	"spacemon/internal/scanner"
 	. "spacemon/internal/util"
 	"strings"
@@ -42,15 +43,8 @@ func renderSingleScanTable(result scanner.ScanResult) string {
 	tableWriter.AppendHeader(table.Row{"path", "size", "dirs", "files", "scan duration"})
 
 	for _, dir := range result.ScanSetup.Directories {
-		if dirResult, ok := result.DirectoryResults.Get(dir); ok {
-			tableWriter.AppendRow([]interface{}{
-				C("dirs", scanner.ShorifyPath(dir)),
-				HumanSize(dirResult.TotalSize),
-				fmt.Sprintf("%d", dirResult.FolderCount),
-				fmt.Sprintf("%d", dirResult.FileCount),
-				dirResult.ScanDuration,
-			})
-		} else { // not scanned yet
+		dirResult, ok := result.DirectoryResults.Get(dir)
+		if !ok || dirResult.Canceled {
 			tableWriter.AppendRow([]interface{}{
 				C("dirs", scanner.ShorifyPath(dir)),
 				"…",
@@ -58,7 +52,16 @@ func renderSingleScanTable(result scanner.ScanResult) string {
 				"…",
 				0,
 			})
+			continue
 		}
+
+		tableWriter.AppendRow([]interface{}{
+			C("dirs", scanner.ShorifyPath(dir)),
+			HumanSize(dirResult.TotalSize),
+			fmt.Sprintf("%d", dirResult.FolderCount),
+			fmt.Sprintf("%d", dirResult.FileCount),
+			dirResult.ScanDuration,
+		})
 	}
 
 	tableWriter.AppendSeparator()
@@ -78,5 +81,10 @@ func renderSingleScanTable(result scanner.ScanResult) string {
 		"", "",
 		time.Since(result.StartTime).Round(time.Millisecond),
 	})
+	if result.Error != "" {
+		tableWriter.AppendSeparator()
+		e := C("error", result.Error)
+		tableWriter.AppendRow(table.Row{e, "", "", "", ""}, table.RowConfig{AutoMerge: true, AutoMergeAlign: text.AlignLeft})
+	}
 	return tableWriter.Render()
 }
