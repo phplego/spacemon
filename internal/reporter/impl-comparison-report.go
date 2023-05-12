@@ -101,11 +101,17 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 
 	deltaFreeSpace := HumanSizeSign(comparisonResult.FreeSpaceDiff)
 
+	var t0 = comparisonResult.ScanResult.StartTime
+	var t1 = comparisonResult.ScanResult.EndTime
+	if t1.IsZero() {
+		t1 = time.Now()
+	}
+
 	tableWriter.AppendRow(table.Row{
 		"FREE SPACE",
 		C("free", HumanSize(comparisonResult.ScanResult.FreeSpace)) + " " + color.HiMagentaString(deltaFreeSpace),
 		"", "",
-		time.Since(comparisonResult.ScanResult.StartTime).Round(time.Millisecond),
+		t1.Sub(t0).Round(time.Millisecond),
 	})
 	if comparisonResult.ScanResult.Error != "" {
 		tableWriter.AppendSeparator()

@@ -2,20 +2,29 @@
 <head>
     <title>spacemon</title>
     <script>
-        function start(dry = false) {
-            let url = "ws://"+document.location.host+"/ws" + (dry ? '?dry=1' : '')
-            const socket = new WebSocket(url)
-            socket.onmessage = function(event) {
+        let gSocket = null
+
+        function start(options) {
+            let url = "ws://"+document.location.host+"/ws"
+            const params = new URLSearchParams(options);
+            if (params.toString() !== ''){
+                url += "?" + params.toString()
+            }
+            if (gSocket != null){
+                gSocket.close()
+            }
+            gSocket = new WebSocket(url)
+            gSocket.onmessage = function(event) {
                 const data = JSON.parse(event.data)
                 document.getElementById("report").innerHTML = data.output
                 document.title = data.title
             }
-            socket.onclose = function(event) {
+            gSocket.onclose = function(event) {
                 console.log("WebSocket closed:", event)
             }
         }
 
-        start(true)
+        start({action: 'last'})
     </script>
     <style>
         .bold{font-weight: bold;}
@@ -23,13 +32,16 @@
         .fg-bright-blue{color: deepskyblue;}
         .fg-bright-green{color: lime;}
         .fg-bright-yellow{color: yellow;}
+        .fg-bright-red{color: indianred;}
         .fg-blue{color: #00759b;}
         .fg-yellow{color: yellow;}
+        .fg-red{color: darkred;}
     </style>
 </head>
 <body style="background-color: #333; color: white">
-    <button onclick="start()">start and save</button>
-    <button onclick="start(true)">start (dry run)</button>
+    <button onclick="start({action: 'last'})">last result</button>
+    <button onclick="start({dry:1})">scan (dry run)</button>
+    <button onclick="start()">scan and save</button>
     <pre id="report"></pre>
 </body>
 </html>

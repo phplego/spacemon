@@ -63,12 +63,49 @@ func cmdScan(ch chan string, dryRun bool) {
 	close(ch)
 }
 
+func cmdShowLastReport(ch chan string) {
+	scanContextCancel()
+	scanContext, scanContextCancel = context.WithCancel(context.Background())
+
+	prevResult, err := storage.LoadPreviousResults()
+	if err != nil {
+		ch <- "Empty result. No previous scan"
+		close(ch)
+		return
+	}
+	prevPrevResult, err := storage.LoadPreviousResultsN(2)
+
+	var report reporter.ReportInterface
+
+	if prevPrevResult == nil {
+		report = &reporter.SingleScanReport{}
+	} else {
+		report = reporter.NewComparisonReport(*prevPrevResult)
+	}
+
+	report.Update(*prevResult)
+	html := ansihtml.ConvertToHTMLWithClasses([]byte(report.Render()), "", true)
+	bytes, _ := json.Marshal(map[string]string{
+		"output": string(html),
+		"title":  prevResult.ScanSetup.Title,
+	})
+	ch <- string(bytes)
+	close(ch)
+}
+
 func wsHandler(ws *websocket.Conn) {
 	defer ws.Close()
 	var dry = ws.Request().URL.Query().Get("dry")
-	println("dry=", dry)
+	var act = ws.Request().URL.Query().Get("action")
 	var ch = make(chan string)
-	go cmdScan(ch, dry != "")
+
+	switch act {
+	case "last":
+		go cmdShowLastReport(ch)
+	default:
+		go cmdScan(ch, dry != "")
+	}
+
 	for msg := range ch {
 		_, err := ws.Write([]byte(msg))
 		if err != nil {

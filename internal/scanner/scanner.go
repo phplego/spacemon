@@ -15,6 +15,7 @@ type ScanResult struct {
 	DirectoryResults *SafeMap[string, DirectoryResult]
 	FreeSpace        int64
 	StartTime        time.Time
+	EndTime          time.Time
 	Completed        bool
 	Error            string
 }
@@ -66,6 +67,7 @@ func ScanDirectories(ctx context.Context, setup ScanSetup, resultsChan chan<- Sc
 	}
 
 	result.Completed = true
+	result.EndTime = time.Now()
 	resultsChan <- result
 
 	close(resultsChan)

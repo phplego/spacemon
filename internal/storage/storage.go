@@ -19,14 +19,18 @@ func init() {
 // LoadPreviousResults loads the most recent scan result from the storage.
 // It returns a pointer to the ScanResult and an error if any occurred.
 func LoadPreviousResults() (*scanner.ScanResult, error) {
+	return LoadPreviousResultsN(1)
+}
+
+func LoadPreviousResultsN(stepsBack int) (*scanner.ScanResult, error) {
 	// Retrieve the list of available keys in the "scans/" namespace.
 	keys := storage.Keys("scans/")
-	if len(keys) == 0 {
+	if len(keys) < stepsBack {
 		// If there are no keys, return nil
 		return nil, errors.New("there is no previous result")
 	}
 	// Get the latest scan result using the last key in the sorted list.
-	prevkey := keys[len(keys)-1]
+	prevkey := keys[len(keys)-stepsBack]
 	var prevResult scanner.ScanResult
 	err := storage.Get(prevkey, &prevResult)
 	if err != nil {

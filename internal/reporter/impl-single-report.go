@@ -75,11 +75,17 @@ func renderSingleScanTable(result scanner.ScanResult) string {
 	})
 	tableWriter.AppendSeparator()
 
+	var t0 = result.StartTime
+	var t1 = result.EndTime
+	if t1.IsZero() {
+		t1 = time.Now()
+	}
+
 	tableWriter.AppendRow(table.Row{
 		"FREE SPACE",
 		C("free", HumanSize(result.FreeSpace)),
 		"", "",
-		time.Since(result.StartTime).Round(time.Millisecond),
+		t1.Sub(t0).Round(time.Millisecond),
 	})
 	if result.Error != "" {
 		tableWriter.AppendSeparator()
