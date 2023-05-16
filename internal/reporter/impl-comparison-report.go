@@ -119,5 +119,6 @@ func renderComparisonTable(comparisonResult comparer.ComparisonResult) string {
 		tableWriter.AppendRow(table.Row{e, "", "", "", ""}, table.RowConfig{AutoMerge: true, AutoMergeAlign: text.AlignLeft})
 
 	}
+
 	return tableWriter.Render()
 }

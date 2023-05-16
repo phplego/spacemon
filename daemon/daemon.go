@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/gorepos/asciigraph"
 	"github.com/robert-nix/ansihtml"
 	"golang.org/x/net/websocket"
 	"log"
@@ -21,12 +22,10 @@ func init() {
 	color.NoColor = false
 }
 
-func cmdScan(ch chan string, dryRun bool) {
+func cmdScan(ctx context.Context, ch chan string, dryRun bool) {
 	cfg := config.LoadConfig()
-	scanContextCancel()
-	scanContext, scanContextCancel = context.WithCancel(context.Background())
 	scanResultsChan := make(chan scanner.ScanResult)
-	go scanner.ScanDirectories(scanContext, scanner.ScanSetup{
+	go scanner.ScanDirectories(ctx, scanner.ScanSetup{
 		Directories: cfg.Directories,
 		Title:       cfg.Title,
 	}, scanResultsChan)
@@ -55,7 +54,7 @@ func cmdScan(ch chan string, dryRun bool) {
 		ch <- string(bytes)
 	}
 
-	if !dryRun {
+	if !dryRun && result.Error == "" {
 		storage.SaveResult(result)
 		report.Save()
 		storage.Cleanup(cfg.MaxHistorySize)
@@ -64,8 +63,6 @@ func cmdScan(ch chan string, dryRun bool) {
 }
 
 func cmdShowLastReport(ch chan string) {
-	scanContextCancel()
-	scanContext, scanContextCancel = context.WithCancel(context.Background())
 
 	prevResult, err := storage.LoadPreviousResults()
 	if err != nil {
@@ -93,17 +90,68 @@ func cmdShowLastReport(ch chan string) {
 	close(ch)
 }
 
+type GetterFunc func(result scanner.ScanResult) float64
+
+func chart(allResults []scanner.ScanResult, fun GetterFunc, caption, unit string) string {
+	var data []float64
+	for i := len(allResults) - 1; i >= 0; i-- {
+		res := allResults[i]
+		data = append(data, fun(res))
+	}
+
+	graph := asciigraph.Plot(data,
+		asciigraph.Height(5),
+		asciigraph.UnitPostfix(" "+unit),
+		asciigraph.SeriesColors(asciigraph.Green),
+		asciigraph.Caption(caption),
+	)
+	return string(ansihtml.ConvertToHTMLWithClasses([]byte(graph), "", true))
+}
+
+func cmdGraph(ch chan string) {
+	results := []scanner.ScanResult{}
+	n := 1
+	for {
+		r, _ := storage.LoadPreviousResultsN(n)
+		if r == nil {
+			break
+		}
+		results = append(results, *r)
+		n++
+	}
+	output := ""
+	output += chart(results, func(result scanner.ScanResult) float64 {
+		return float64(result.FreeSpace / 1024 / 1024)
+	}, "free space", "MB")
+	//output += chart(results, func(result scanner.ScanResult) float64 {
+	//
+	//	return float64(result.DirectoryResults[0]44)
+	//}, "free space")
+
+	bytes, _ := json.Marshal(map[string]string{
+		"output": output,
+		"title":  "Graph",
+	})
+	ch <- string(bytes)
+	close(ch)
+}
+
 func wsHandler(ws *websocket.Conn) {
 	defer ws.Close()
 	var dry = ws.Request().URL.Query().Get("dry")
 	var act = ws.Request().URL.Query().Get("action")
 	var ch = make(chan string)
 
+	scanContextCancel()
+	scanContext, scanContextCancel = context.WithCancel(context.Background())
+
 	switch act {
 	case "last":
 		go cmdShowLastReport(ch)
+	case "graph":
+		go cmdGraph(ch)
 	default:
-		go cmdScan(ch, dry != "")
+		go cmdScan(scanContext, ch, dry != "")
 	}
 
 	for msg := range ch {
