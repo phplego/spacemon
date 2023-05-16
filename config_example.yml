@@ -13,6 +13,9 @@ directories:
 # Older results will be removed from the storage.
 max-history-size: 20
 
+# Daemon bind interface
+daemon-bind-addr: 0.0.0.0
+
 # Daemon HTTP port
 daemon-port: 18080
 

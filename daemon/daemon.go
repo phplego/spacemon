@@ -174,8 +174,8 @@ func RunWebserver() {
 	// Root route handler
 	http.Handle("/", http.StripPrefix("/", fileServer))
 	cfg := config.LoadConfig()
-	log.Printf("Starting server on http://localhost:%d ...\n", cfg.DaemonPort)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.DaemonPort), nil)
+	log.Printf("Starting server on http://%s:%d ...\n", cfg.DaemonBindAddr, cfg.DaemonPort)
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.DaemonBindAddr, cfg.DaemonPort), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}

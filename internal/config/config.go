@@ -14,6 +14,7 @@ type Config struct {
 	// If left empty, the hostname will be used as the title.
 	Title               string `yaml:"title"`
 	MaxHistorySize      int    `yaml:"max-history-size"`
+	DaemonBindAddr      string `yaml:"daemon-bind-addr"`
 	DaemonPort          int    `yaml:"daemon-port"`
 	DaemonBasicUsername string `yaml:"daemon-basic-username"`
 	DaemonBasicPassword string `yaml:"daemon-basic-password"`
@@ -23,6 +24,7 @@ func LoadConfig() Config {
 	// Default config values
 	cfg := Config{
 		MaxHistorySize:      20,
+		DaemonBindAddr:      "0.0.0.0",
 		DaemonPort:          18080,
 		DaemonBasicUsername: "user",
 		DaemonBasicPassword: "KJSHDfe43cIbf3d5fMrU",
