@@ -96,7 +96,11 @@ func chart(allResults []scanner.ScanResult, fun GetterFunc, caption, unit string
 	var data []float64
 	for i := len(allResults) - 1; i >= 0; i-- {
 		res := allResults[i]
-		data = append(data, fun(res))
+		val := fun(res)
+		if val < 0 {
+			continue
+		}
+		data = append(data, val)
 	}
 
 	graph := asciigraph.Plot(data,
@@ -123,10 +127,18 @@ func cmdGraph(ch chan string) {
 	output += chart(results, func(result scanner.ScanResult) float64 {
 		return float64(result.FreeSpace / 1024 / 1024)
 	}, "free space", "MB")
-	//output += chart(results, func(result scanner.ScanResult) float64 {
-	//
-	//	return float64(result.DirectoryResults[0]44)
-	//}, "free space")
+	output += "\n\n"
+
+	for _, dir := range results[0].ScanSetup.Directories {
+		output += chart(results, func(result scanner.ScanResult) float64 {
+			if dr, ok := result.DirectoryResults.Get(dir); ok {
+				return float64(dr.TotalSize) / 1024 / 1024
+			}
+			return -1
+		}, dir, "MB")
+
+		output += "\n\n"
+	}
 
 	bytes, _ := json.Marshal(map[string]string{
 		"output": output,
