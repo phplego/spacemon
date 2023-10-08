@@ -177,11 +177,11 @@ func wsHandler(ws *websocket.Conn) {
 
 func RunWebserver() {
 	// Websocket handler /ws
-	http.Handle("/ws", websocket.Handler(wsHandler))
+	http.Handle("/ws", authMiddleware(websocket.Handler(wsHandler), config.LoadConfig().DaemonUsername, config.LoadConfig().DaemonPassword))
 
 	// File server for HTML and JS files
 	fileServer := http.FileServer(http.Dir("static"))
-	fileServer = basicAuthMiddleware(fileServer, config.LoadConfig().DaemonBasicUsername, config.LoadConfig().DaemonBasicPassword)
+	fileServer = authMiddleware(fileServer, config.LoadConfig().DaemonUsername, config.LoadConfig().DaemonPassword)
 
 	// Root route handler
 	http.Handle("/", http.StripPrefix("/", fileServer))
