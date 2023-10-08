@@ -29,12 +29,12 @@ func authMiddleware(handler http.Handler, username, password string) http.Handle
 						Name:  "token",
 						Value: generateDailyToken(user, pass),
 					})
-					// Redirect to the same url
-					http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
-					return
 				} else {
-					w.Write([]byte("Invalid credentials"))
+					log.Println("Invalid credentials")
+					time.Sleep(time.Second)
 				}
+				// Redirect back to the referer
+				http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
 			}
 
 			// If method is not POST or cookie does not exist/is invalid, show the form
