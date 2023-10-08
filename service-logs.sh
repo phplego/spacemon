@@ -4,4 +4,4 @@
 source ./service-config.sh
 
 # Show logs
-sudo journalctl -u $SERVICE_NAME -f -n 1000
+sudo journalctl -u $SERVICE_NAME -f -n ${1:-1000} --output cat
