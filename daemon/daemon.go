@@ -1,3 +1,6 @@
+// Webserver for spacemon
+// It serves the web interface and provides a websocket API for the frontend
+
 package main
 
 import (
@@ -24,7 +27,7 @@ func init() {
 	color.NoColor = false
 }
 
-func cmdScan(ctx context.Context, ch chan string, dryRun bool) {
+func actionScan(ctx context.Context, ch chan<- string, dryRun bool) {
 	cfg := config.LoadConfig()
 	scanResultsChan := make(chan scanner.ScanResult)
 	go scanner.ScanDirectories(ctx, scanner.ScanSetup{
@@ -64,7 +67,7 @@ func cmdScan(ctx context.Context, ch chan string, dryRun bool) {
 	close(ch)
 }
 
-func cmdShowLastReport(ch chan string) {
+func actionLastReport(ch chan<- string) {
 
 	prevResult, err := storage.LoadPreviousResults()
 	if err != nil {
@@ -114,7 +117,7 @@ func chart(allResults []scanner.ScanResult, fun GetterFunc, caption, unit string
 	return string(ansihtml.ConvertToHTMLWithClasses([]byte(graph), "", true))
 }
 
-func cmdGraph(ch chan string) {
+func actionGraph(ch chan<- string) {
 	results := []scanner.ScanResult{}
 	n := 1
 	for {
@@ -156,16 +159,16 @@ func wsHandler(ws *websocket.Conn) {
 	var act = ws.Request().URL.Query().Get("action")
 	var ch = make(chan string)
 
-	scanContextCancel()
+	scanContextCancel() // cancel previous scan. Only one scan at a time
 	scanContext, scanContextCancel = context.WithCancel(context.Background())
 
 	switch act {
 	case "last":
-		go cmdShowLastReport(ch)
+		go actionLastReport(ch)
 	case "graph":
-		go cmdGraph(ch)
+		go actionGraph(ch)
 	default:
-		go cmdScan(scanContext, ch, dry != "")
+		go actionScan(scanContext, ch, dry != "")
 	}
 
 	for msg := range ch {
