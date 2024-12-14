@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/gorepos/asciigraph"
 	"github.com/robert-nix/ansihtml"
 	"golang.org/x/net/websocket"
+	"io/fs"
 	"log"
 	"net/http"
 	"spacemon/internal/config"
@@ -175,12 +177,19 @@ func wsHandler(ws *websocket.Conn) {
 	}
 }
 
+// embed static files
+//
+//go:embed static
+var embeddedFiles embed.FS
+
 func RunWebserver() {
 	// Websocket handler /ws
 	http.Handle("/ws", authMiddleware(websocket.Handler(wsHandler), config.LoadConfig().DaemonUsername, config.LoadConfig().DaemonPassword))
 
 	// File server for HTML and JS files
-	fileServer := http.FileServer(http.Dir("static"))
+	//fileServer := http.FileServer(http.Dir("static"))
+	staticFiles, _ := fs.Sub(embeddedFiles, "static")
+	fileServer := http.FileServer(http.FS(staticFiles))
 	fileServer = authMiddleware(fileServer, config.LoadConfig().DaemonUsername, config.LoadConfig().DaemonPassword)
 
 	// Root route handler
